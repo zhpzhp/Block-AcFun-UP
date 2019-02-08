@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         block Acfun UP
+// @name         Block AcFun UP
 // @version      1.0
 // @description  屏蔽不想看见的文章区UP主
 // @author       zhpzhp

@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         Block AcFun UP
-// @version      1.1
+// @version      1.2
 // @description  屏蔽不想看见的UP主
 // @author       zhpzhp
 // @require      http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @match        http://www.acfun.cn/*
 // @reference    https://stackoverflow.com/questions/9169032/how-to-use-greasemonkey-to-selectively-remove-content-from-a-website
 // @reference    https://stackoverflow.com/questions/47808117/filter-items-based-on-data-attribute-in-jquery
-// @namespace    https://greasyfork.org/users/245339 https://github.com/zhpzhp/Block-AcFun-UP
+// @namespace    https://greasyfork.org/users/245339
+// @github       https://github.com/zhpzhp/Block-AcFun-UP
 // ==/UserScript==
 
 // https://gist.github.com/raw/2625891/waitForKeyElements.js not suppored by Greasy Fork, copied here
@@ -106,7 +107,7 @@ selectorTxt,    /* Required: The jQuery selector string that
 
 var AuthorList=[
     "实锤社i",
-    "暴走漫画"
+    "暴走漫画",
 ];
 
 waitForKeyElements ("div.article-item.clearfix.weblog-item", deleteArticle);
@@ -115,6 +116,7 @@ waitForKeyElements ("figure.fl.block-box.block-video.weblog-item", deleteVideo);
 function deleteVideo (jNode) {
     var $ = window.jQuery;
     var allFigures = $("figure.fl.block-box.block-video.weblog-item").find("> a[data-info]");
+    var allBananas = $("figure.fl.block-box.block-video.weblog-item").find("> figcaption > em > a");
     var badFigures = allFigures.filter(function (){
             var i;
             for (i = 0; i < AuthorList.length; i++) {
@@ -123,7 +125,16 @@ function deleteVideo (jNode) {
                 }
             }
     });
+    var badBananas = allBananas.filter(function (){
+            var i;
+            for (i = 0; i < AuthorList.length; i++) {
+                if ($(this).attr("title") == AuthorList[i]){
+                    return $(this);
+                }
+            }
+    });
     badFigures.parent().remove ();
+    badBananas.parent().parent().parent().remove ();
 }
 
 function deleteArticle (jNode) {

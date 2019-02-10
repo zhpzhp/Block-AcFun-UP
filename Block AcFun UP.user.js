@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         Block AcFun UP
-// @version      1.0
-// @description  屏蔽不想看见的文章区UP主
+// @version      1.1
+// @description  屏蔽不想看见的UP主
 // @author       zhpzhp
 // @require      http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @match        http://www.acfun.cn/*
 // @reference    https://stackoverflow.com/questions/9169032/how-to-use-greasemonkey-to-selectively-remove-content-from-a-website
+// @reference    https://stackoverflow.com/questions/47808117/filter-items-based-on-data-attribute-in-jquery
+// @namespace    https://greasyfork.org/users/245339 https://github.com/zhpzhp/Block-AcFun-UP
 // ==/UserScript==
 
 // https://gist.github.com/raw/2625891/waitForKeyElements.js not suppored by Greasy Fork, copied here
@@ -27,18 +29,18 @@
     IMPORTANT: This function requires your script to have loaded jQuery.
 */
 function waitForKeyElements (
-    selectorTxt,    /* Required: The jQuery selector string that
+selectorTxt,    /* Required: The jQuery selector string that
                         specifies the desired element(s).
                     */
-    actionFunction, /* Required: The code to run when elements are
+ actionFunction, /* Required: The code to run when elements are
                         found. It is passed a jNode to the matched
                         element.
                     */
-    bWaitOnce,      /* Optional: If false, will continue to scan for
+ bWaitOnce,      /* Optional: If false, will continue to scan for
                         new elements even after the first match is
                         found.
                     */
-    iframeSelector  /* Optional: If set, identifies the iframe to
+ iframeSelector  /* Optional: If set, identifies the iframe to
                         search.
                     */
 ) {
@@ -48,7 +50,7 @@ function waitForKeyElements (
         targetNodes     = $(selectorTxt);
     else
         targetNodes     = $(iframeSelector).contents ()
-                                           .find (selectorTxt);
+            .find (selectorTxt);
 
     if (targetNodes  &&  targetNodes.length > 0) {
         btargetsFound   = true;
@@ -88,24 +90,47 @@ function waitForKeyElements (
         //--- Set a timer, if needed.
         if ( ! timeControl) {
             timeControl = setInterval ( function () {
-                    waitForKeyElements (    selectorTxt,
-                                            actionFunction,
-                                            bWaitOnce,
-                                            iframeSelector
-                                        );
-                },
-                300
-            );
+                waitForKeyElements (    selectorTxt,
+                                    actionFunction,
+                                    bWaitOnce,
+                                    iframeSelector
+                                   );
+            },
+                                       300
+                                      );
             controlObj [controlKey] = timeControl;
         }
     }
     waitForKeyElements.controlObj   = controlObj;
 }
 
-waitForKeyElements ("div.article-item.clearfix.weblog-item", deleteAuthor);
+var AuthorList=[
+    "实锤社i",
+    "暴走漫画"
+];
 
-function deleteAuthor (jNode) {
+waitForKeyElements ("div.article-item.clearfix.weblog-item", deleteArticle);
+waitForKeyElements ("figure.fl.block-box.block-video.weblog-item", deleteVideo);
+
+function deleteVideo (jNode) {
     var $ = window.jQuery;
-    var badDivs = $("div.article-item.clearfix.weblog-item div:contains('实锤社i')");
-    badDivs.parent().remove ();
+    var allFigures = $("figure.fl.block-box.block-video.weblog-item").find("> a[data-info]");
+    var badFigures = allFigures.filter(function (){
+            var i;
+            for (i = 0; i < AuthorList.length; i++) {
+                if ($(this).data('info').userName == AuthorList[i]){
+                    return $(this);
+                }
+            }
+    });
+    badFigures.parent().remove ();
+}
+
+function deleteArticle (jNode) {
+    var $ = window.jQuery;
+    var i;
+    for (i = 0; i < AuthorList.length; i++) {
+        var badDivs = $("div.article-item.clearfix.weblog-item div:contains('" + AuthorList[i] + "')");
+        badDivs.parent().remove ();
+    }
 }
